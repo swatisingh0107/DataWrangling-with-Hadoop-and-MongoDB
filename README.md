@@ -1,7 +1,7 @@
 # SparkMLApplication
 We will build a SparkML application to build sentiment analysis model for Nike using Twitter Data
 
-##Setup HDP Sandbox
+## Setup HDP Sandbox
 
 1. Install Docker toolbox and run as Administrator
 Prerequisites:
