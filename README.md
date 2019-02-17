@@ -17,9 +17,9 @@ $ docker-machine create -d virtualbox --virtualbox-disk-size "100000" --virtualb
 ```
 
 ## Troubleshooting
-Docker toolbox required the working directory to be shareable to be able to mount the proxy sandbox folders to the container.
-To mount contents of a folder to the container, follow the folowing steps:
-Navigate to ~/.docker/machine/machines/default/default
+Docker toolbox required the working directory to be shareable to be able to mount the proxy sandbox folders to the container.\n
+To mount contents of a folder to the container, follow the folowing steps:\n
+Navigate to ~/.docker/machine/machines/default/default \n
 Edit the VBOX=PREV file with the following additon
 ```
 <SharedFolders>
