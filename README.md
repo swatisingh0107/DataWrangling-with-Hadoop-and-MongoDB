@@ -17,7 +17,7 @@ $ docker-machine create -d virtualbox --virtualbox-disk-size "100000" --virtualb
 ```
 
 ## Troubleshooting
-Docker toolbox required the working directory to be shareable to be able to mount the proxy sandbox folders to the container.\
+1. Docker toolbox required the working directory to be shareable to be able to mount the proxy sandbox folders to the container.\
 To mount contents of a folder to the container, follow the folowing steps:\
 Navigate to ~/.docker/machine/machines/default/default \
 Edit the VBOX-PREV file with the following additon
@@ -29,6 +29,13 @@ Edit the VBOX-PREV file with the following additon
                       writable="true" autoMount="true"/>
       </SharedFolders>
 ```
+2.  Error response from daemon: cgroups: cannot find cgroup mount destination: unknown. \
+Solution
+```
+$ docker-machine ssh default "sudo mkdir /sys/fs/cgroup/systemd"
+$ docker-machine ssh default "sudo mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd"
+```
+
 ## HDP Deployment
 
 Download deployment scripts for Docker from [here](https://hortonworks.com/downloads/#sandbox)
