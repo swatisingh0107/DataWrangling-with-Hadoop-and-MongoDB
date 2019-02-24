@@ -71,4 +71,4 @@ To check which network adapter, the sandbox is attached to, check the network se
 
 # Application
 
-## 1. [What is sentiment analysis?](https://github.com/swatisingh0107/SparkMLApplication/blob/master/Sentiment%20Analysis/Readme.md)
+1. [What is sentiment analysis?](https://github.com/swatisingh0107/SparkMLApplication/blob/master/Sentiment%20Analysis/Readme.md)
