@@ -46,6 +46,6 @@ Download deployment scripts for Docker from [here](https://hortonworks.com/downl
         ```  
 **Troubleshooting for proxy deploy**  
 If you get docker error for invalid reference format, replace your system path in proxy-deploy.sh script with $(pwd) to map volumes  
-        For example:  
-        In my [script](https://github.com/swatisingh0107/SparkMLApplication/blob/master/HDP3.0.1/sandbox/proxy/proxy-deploy.sh), I've replaced \C:\Users\swati\Downloads\HDP3.0.1 with \$PWD  
+For example:  
+In my [script](https://github.com/swatisingh0107/SparkMLApplication/blob/master/HDP3.0.1/sandbox/proxy/proxy-deploy.sh), I've replaced \C:\Users\swati\Downloads\HDP3.0.1 with \$PWD  
 
