@@ -1,9 +1,6 @@
 
 ###  What is sentiment analysis  ?  
-Sentiment Analysis is:  
-> Analysis of body of text  
-> Identifies and extracts opinions expressed by the text  
-> Popular application of NLP  
+Sentiment Analysis is the analysis of body of text to identify and extract opinions expressed by the text. It is one of the most popular applications of Natural Language Processing(NLP).    
 
 Opinion is typically extracted as a quantifiable sentiment called polarity often inferred as positive , negative or neutral sentiment. This polar sentiment is determined by the score of the polarity score.  
 
