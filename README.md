@@ -16,7 +16,7 @@ $ docker-machine rm default
 $ docker-machine create -d virtualbox --virtualbox-disk-size "100000" --virtualbox-memory "10240" default
 ```
 
-## Troubleshooting
+<!-- ## Troubleshooting
 1. Docker toolbox required the working directory to be shareable to be able to mount the proxy sandbox folders to the container.\
 To mount contents of a folder to the container, follow the folowing steps:\
 Navigate to ~/.docker/machine/machines/default/default \
@@ -35,7 +35,7 @@ Solution
 $ docker-machine ssh default "sudo mkdir /sys/fs/cgroup/systemd"
 $ docker-machine ssh default "sudo mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd"
 ```
-
+-->
 ## HDP Deployment
 
 Download deployment scripts for Docker from [here](https://hortonworks.com/downloads/#sandbox)
