@@ -53,4 +53,19 @@ Rexecute proxy-deploy in Git Bash
 ```
 $ sandbox/proxy/proxy-deploy.sh
 ```  
+## Map Sandbox to Host
+1. Run cmd as administrator  
+2. Navigate to c:\Windows\System32\drivers\etc\hosts  
+3. Type 'dir' to check if you are in correct directory  
+4. Type 'attrib' to check if hosts file is available for edit. The hosts file will have -r if it is readonly. To remove read-only permission use 'attrib -r hosts'  
+5. Now type 'notepad hosts' to open the hosts file in notepad.  
+6. Add {IP-Address} localhost sandbox-hdp.hortonworks.com sandbox-hdf.hortonworks.com   
+7. Save the file  
+
+**IMPORTANT**: Replace {IP-Address} with Sandbox IP Address.  
+
+To check Sandbox IP address, check the IPAdress for network adapter of the sandox using ``` ipconfig /all``` in cmd.  
+To check which network adapter, the sandbox is attached to, check the network settings for docker machine in Oracle VM Manager
+
+
 
