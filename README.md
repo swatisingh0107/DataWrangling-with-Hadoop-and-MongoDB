@@ -44,6 +44,7 @@ Download deployment scripts for Docker from [here](https://hortonworks.com/downl
         ```
         $ sh docker-deploy-hdp30
         ```  
+
 **Troubleshooting for proxy deploy**  
 If you get docker error for invalid reference format, replace your system path in proxy-deploy.sh script with $(pwd) to map volumes  
 For example:  
