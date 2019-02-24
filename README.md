@@ -39,13 +39,13 @@ $ docker-machine ssh default "sudo mount -t cgroup -o none,name=systemd cgroup /
 ## HDP Deployment
 
 Download deployment scripts for Docker from [here](https://hortonworks.com/downloads/#sandbox)
-1. For simplest installation, make sure that you download and extract the scripts in your Download folder
-2. Run Git Bash in your extracted folder and execute the deployment script  docker-deploy-hdp<version>
+1. For simplest installation, make sure that you download and extract the scripts in your Download folder/
+2. Run Git Bash in your extracted folder and execute the deployment script  docker-deploy-hdp<version>/
         ```
         $ sh docker-deploy-hdp30
         ```
-**Troubleshooting for proxy deploy**
-If you get docker error for invalid reference format, replace your system path in proxy-deploy.sh script with $(pwd) to map volumes
-        For example:
+**Troubleshooting for proxy deploy**/
+If you get docker error for invalid reference format, replace your system path in proxy-deploy.sh script with $(pwd) to map volumes/
+        For example:/
         In my [script](https://github.com/swatisingh0107/SparkMLApplication/blob/master/HDP3.0.1/sandbox/proxy/proxy-deploy.sh), I've replaced \C:\Users\swati\Downloads\HDP3.0.1 with \$PWD
-
+/
