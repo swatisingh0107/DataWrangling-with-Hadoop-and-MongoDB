@@ -2,6 +2,7 @@
 We will build a SparkML application to build sentiment analysis model for Nike using Twitter Data.
 We will then visualize various metrics using Hive mapping to HBase table.
 
+# Setup
 ## Setup HDP Sandbox
 
 1. Install Docker toolbox and run as Administrator
@@ -68,4 +69,6 @@ To check Sandbox IP address, check the IPAdress for network adapter of the sando
 To check which network adapter, the sandbox is attached to, check the network settings for docker machine in Oracle VM Manager
 
 
+# Application
 
+## 1. [What is sentiment analysis?] (https://github.com/swatisingh0107/SparkMLApplication/blob/master/Sentiment%20Analysis/Readme.md)
