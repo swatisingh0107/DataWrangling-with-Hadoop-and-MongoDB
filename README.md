@@ -43,7 +43,7 @@ Download deployment scripts for Docker from [here](https://hortonworks.com/downl
 2. Run Git Bash in your extracted folder and execute the deployment script  docker-deploy-hdp<version>  
         ```
         $ sh docker-deploy-hdp30
-        ```
+        ```  
 **Troubleshooting for proxy deploy**  
 If you get docker error for invalid reference format, replace your system path in proxy-deploy.sh script with $(pwd) to map volumes  
         For example:  
