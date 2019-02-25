@@ -56,12 +56,10 @@ Solution \
 ```
 $ docker-machine ssh default "sudo mkdir /sys/fs/cgroup/systemd"
 $ docker-machine ssh default "sudo mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd"
-
-```
 $ sandbox/proxy/proxy-deploy.sh
-```  \
+``` 
 
-3. If you want to run Connected Data Architectures, i.e. executing Hortonworks various services on a single node, both HDP and HDF should have CDA enabled. This statement is true for HDP 2.6.5 and HDF 3.1.1. CDA Sandbox is disabled for HDP 3.0.1 until further notice. To ensure, you have correct version of the image, check docker-deploy script and update the version.
+3. If you want to run Connected Data Architectures, i.e. executing Hortonworks various services on a single node, both HDP and HDF should have CDA enabled. This statement is true for HDP 2.6.5 and HDF 3.1.1. CDA Sandbox is disabled for HDP 3.0.1 until further notice. To ensure, you have correct version of the image, check docker-deploy script and update the version. \
 
 ## Map Sandbox to Host
 1. Run cmd as administrator  
@@ -74,9 +72,7 @@ $ sandbox/proxy/proxy-deploy.sh
 
 **IMPORTANT**: Replace {IP-Address} with Sandbox IP Address.  
 
-To check Sandbox IP address, check the IPAdress for network adapter of the sandox using ``` ipconfig /all``` in cmd.  
-To check which network adapter, the sandbox is attached to, check the network settings for docker machine in Oracle VM Manager
-
+To check Sandbox IP address, in docker, execute ```$ docker-machine config <machine-name>```
 
 # Application
 
