@@ -12,3 +12,5 @@ Types of sentiment analysis
 3. Aspect-based sentiment analysis: Analyzes polarity as well as features or aspects of the products being discussed  
 4. Intent analysis: performs intent classification as what customers will do with a product. This type of analysis is performed when the company wants to improve lead flow, reduce churn, target potential customers etc.  
 5. Multilingual sentiment analysis: Performs text translation and then extracts the polarity score.  
+
+If you want to know more what sentiment analysis can do, [this](https://medium.com/udacity/natural-language-processing-and-sentiment-analysis-43111c33c27e) is a great read.
