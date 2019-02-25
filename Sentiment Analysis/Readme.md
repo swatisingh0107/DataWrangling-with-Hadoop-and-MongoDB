@@ -9,6 +9,6 @@ Sentiment analysis works best with subjective text than objective text. Opinions
 Types of sentiment analysis
 1. Fine-grained sentiment analysis: In this analysis, the bag of words is as important as the keyword itself. It expands the range of polarity between very positive, positive, neutral, negative, very negative.   
 2. Emotion detection: maps the opinion text or words with words in lexicons or ontology to derive the emotion.  
-3 Aspect-based sentiment analysis: Analyzes polarity as well as features or aspects of the products being discussed  
+3. Aspect-based sentiment analysis: Analyzes polarity as well as features or aspects of the products being discussed  
 4. Intent analysis: performs intent classification as what customers will do with a product. This type of analysis is performed when the company wants to improve lead flow, reduce churn, target potential customers etc.  
 5. Multilingual sentiment analysis: Performs text translation and then extracts the polarity score.  
