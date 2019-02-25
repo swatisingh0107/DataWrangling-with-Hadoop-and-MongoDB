@@ -61,6 +61,13 @@ $ sandbox/proxy/proxy-deploy.sh
 
 3. If you want to run Connected Data Architectures, i.e. executing Hortonworks various services on a single node, both HDP and HDF should have CDA enabled. This statement is true for HDP 2.6.5 and HDF 3.1.1. CDA Sandbox is disabled for HDP 3.0.1 until further notice. To ensure, you have correct version of the image, check docker-deploy script and update the version.  
 
+4. proxy-deploy.sh
+Error response from daemon: invalid mode: /etc/nginx/nginx.conf.
+Run Docker in -it mode to trigger tty
+```
+$ docker run -it --name sandbox-proxy --network=cda \
+```
+
 ## Map Sandbox to Host
 1. Run cmd as administrator  
 2. Navigate to c:\Windows\System32\drivers\etc\hosts  
