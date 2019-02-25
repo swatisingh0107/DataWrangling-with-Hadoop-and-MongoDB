@@ -13,6 +13,6 @@ Types of sentiment analysis
 4. Intent analysis: performs intent classification as what customers will do with a product. This type of analysis is performed when the company wants to improve lead flow, reduce churn, target potential customers etc.  
 5. Multilingual sentiment analysis: Performs text translation and then extracts the polarity score.  
 
-**Additional Reading:**
-1, [Sentiment Analysis, everything you need to know](https://monkeylearn.com/sentiment-analysis/)
+**Additional Reading:**  
+1, [Sentiment Analysis, everything you need to know](https://monkeylearn.com/sentiment-analysis/)  
 2. [Sentiment Analysis Use Cases](https://medium.com/udacity/natural-language-processing-and-sentiment-analysis-43111c33c27e)
