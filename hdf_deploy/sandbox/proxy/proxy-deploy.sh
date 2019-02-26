@@ -1,16 +1,15 @@
 #!/usr/bin/env bash
 docker rm -f sandbox-proxy 2>/dev/null
-docker run --name sandbox-proxy --network=cda \
--v /$PWD/assets/nginx.conf:/etc/nginx/nginx.conf \
--v /$PWD/sandbox/proxy/conf.d:/etc/nginx/conf.d \
--v /$PWD/sandbox/proxy/conf.stream.d:/etc/nginx/conf.stream.d \
+docker run -it --name sandbox-proxy --network=cda \
+-v //c/Users/swati/Downloads/hdf_deploy/assets/nginx.conf:/etc/nginx/nginx.conf \
+-v //c/Users/swati/Downloads/hdf_deploy/sandbox/proxy/conf.d:/etc/nginx/conf.d \
+-v //c/Users/swati/Downloads/hdf_deploy/sandbox/proxy/conf.stream.d:/etc/nginx/conf.stream.d \
 -p 1080:1080 \
 -p 4200:4200 \
 -p 7777:7777 \
 -p 7788:7788 \
 -p 8000:8000 \
 -p 8080:8080 \
--p 8443:8443 \
 -p 8744:8744 \
 -p 8886:8886 \
 -p 9088:9088 \
@@ -22,7 +21,6 @@ docker run --name sandbox-proxy --network=cda \
 -p 8042:8042 \
 -p 8088:8088 \
 -p 8188:8188 \
--p 8198:8198 \
 -p 8888:8888 \
 -p 9995:9995 \
 -p 11000:11000 \
@@ -35,10 +33,6 @@ docker run --name sandbox-proxy --network=cda \
 -p 50075:50075 \
 -p 50111:50111 \
 -p 8081:8081 \
--p 8585:8585 \
--p 3000:3000 \
--p 10002:10002 \
--p 30800:30800 \
 -p 2182:2182 \
 -p 2202:2202 \
 -p 4557:4557 \
@@ -49,12 +43,12 @@ docker run --name sandbox-proxy --network=cda \
 -p 15500:15500 \
 -p 1100:1100 \
 -p 1111:1111 \
--p 1234:1234 \
 -p 1988:1988 \
 -p 2100:2100 \
 -p 2181:2181 \
 -p 2201:2201 \
 -p 2222:2222 \
+-p 3000:3000 \
 -p 4242:4242 \
 -p 5007:5007 \
 -p 5011:5011 \
@@ -62,7 +56,6 @@ docker run --name sandbox-proxy --network=cda \
 -p 6003:6003 \
 -p 6008:6008 \
 -p 6188:6188 \
--p 6668:6668 \
 -p 8005:8005 \
 -p 8020:8020 \
 -p 8032:8032 \
@@ -71,6 +64,7 @@ docker run --name sandbox-proxy --network=cda \
 -p 8086:8086 \
 -p 8090:8090 \
 -p 8091:8091 \
+-p 8443:8443 \
 -p 8765:8765 \
 -p 8889:8889 \
 -p 8983:8983 \

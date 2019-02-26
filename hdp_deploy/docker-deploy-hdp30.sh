@@ -5,7 +5,7 @@ set -x
 # CAN EDIT THESE VALUES
 registry="hortonworks"
 name="sandbox-hdp"
-version="3.0.1"
+version="2.6.5"
 proxyName="sandbox-proxy"
 proxyVersion="1.0"
 flavor="hdp"
@@ -31,7 +31,8 @@ elif [ "$flavor" == "hdp" ]; then
  hostname="sandbox-hdp.hortonworks.com"
 fi
 
-version=$(docker images | grep $registry/$name  | awk '{print $2}');
+version="2.6.5"
+#$(docker images | grep $registry/$name  | awk '{print $2}');
 
 # Create cda docker network
 docker network create cda 2>/dev/null
@@ -49,10 +50,10 @@ docker exec -t "$name" sh -c "rm -rf /var/run/postgresql/*; systemctl restart po
 # mv -f assets/generate-proxy-deploy-script.sh.new assets/generate-proxy-deploy-script.sh
 # chmod +x assets/generate-proxy-deploy-script.sh
 # assets/generate-proxy-deploy-script.sh 2>/dev/null
-#
-# #check to see if it's windows
-# if uname | grep MINGW; then
-#  sed -i -e 's/\( \/[a-z]\)/\U\1:/g' sandbox/proxy/proxy-deploy.sh
-# fi
-chmod +x sandbox/proxy/proxy-deploy.sh 2>/dev/null
+
+#check to see if it's windows
+if uname | grep MINGW; then
+ sed -i -e 's/\( \/[a-z]\)/\U\1:/g' sandbox/proxy/proxy-deploy.sh
+fi
+chmod +x sandbox/proxy/proxy-deploy1.sh 2>/dev/null
 sandbox/proxy/proxy-deploy.sh

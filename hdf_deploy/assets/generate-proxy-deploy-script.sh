@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 
-registry="hortonworks"
 flavor=$(cat sandbox-flavor)
 if [ "$flavor" == "hdf" ]; then
  hdfEnabled=true
  hdpEnabled=false
 elif [ "$flavor" == "hdp" ]; then
- hdfEnabled=false
+ hdfEnabled=true
  hdpEnabled=true
 fi
 
@@ -20,9 +19,9 @@ fi
 # a request was intended for based on the content of the hostname and do can
 # safely route all external HTTP-bound ports to each internal container.
 #
-# HDF ports: (1080 4200 7777 7788 8000 8080 8744 8886 9088 61080 61888 8585 3000)
-# HDP ports: (4040 6080 8042 8088 8188 8198 8886 8888 9995 11000 15000 16010 18081 19888 21000 50070 50075 50111 10002 30800)
-httpPorts=(1080 4200 7777 7788 8000 8080 8443 8744 8886 9088 9089 61080 61888 4040 6080 8042 8088 8188 8198 8888 9995 11000 15000 16010 18081 19888 21000 50070 50075 50111 8081 8585 3000 10002 30800)
+# HDF ports: (1080 4200 7777 7788 8000 8080 8744 8886 9088 61080 61888)
+# HDP ports: (4040 6080 8042 8088 8188 8886 8888 9995 11000 15000 16010 18081 19888 21000 50070 50075 50111)
+httpPorts=(1080 4200 7777 7788 8000 8080 8744 8886 9088 9089 61080 61888 4040 6080 8042 8088 8188 8888 9995 11000 15000 16010 18081 19888 21000 50070 50075 50111 8081)
 
 # In the case of TCP/UDP ports, we can not filter incoming connections on
 # hostname, and so must then have 1-to-1 mappings from EXTERNAL_PORTs to
@@ -47,7 +46,6 @@ tcpPortsHDF=(
 )
 
 tcpPortsHDP=(
-[1234]=1234
 [12049]=2049
 [2201]=22
 [2222]=22
@@ -57,6 +55,7 @@ tcpPortsHDP=(
 [1988]=1988
 [2100]=2100
 [2181]=2181
+[3000]=3000
 [4242]=4242
 [5007]=5007
 [5011]=5011
@@ -64,7 +63,6 @@ tcpPortsHDP=(
 [6003]=6003
 [6008]=6008
 [6188]=6188
-[6668]=6667
 [8005]=8005
 [8020]=8020
 [8032]=8032
@@ -73,6 +71,7 @@ tcpPortsHDP=(
 [8086]=8086
 [8090]=8090
 [8091]=8091
+[8443]=8443
 [8765]=8765
 [8889]=8889
 [8983]=8983
@@ -112,7 +111,7 @@ mkdir -p sandbox/proxy/conf.stream.d
 
 
 if [ "$hdfEnabled" = true ]; then
-  name="sandbox-hdf-standalone-cda-ready"
+  name="sandbox-hdf"
   hostname="sandbox-hdf.hortonworks.com"
   for port in ${httpPorts[@]}; do
     cat << EOF >> sandbox/proxy/conf.d/http-hdf.conf
@@ -198,14 +197,14 @@ fi
 # (found in the above lists).
 
 absPath=$(pwd)
-version=$(docker images | grep ${registry}/sandbox-proxy  | awk '{print $2}');
+version=$(docker images | grep hortonworks/sandbox-proxy  | awk '{print $2}');
 cat << EOF > sandbox/proxy/proxy-deploy.sh
 #!/usr/bin/env bash
 docker rm -f sandbox-proxy 2>/dev/null
-docker run --name sandbox-proxy --network=cda \\
--v $absPath/assets/nginx.conf:/etc/nginx/nginx.conf \\
--v $absPath/sandbox/proxy/conf.d:/etc/nginx/conf.d \\
--v $absPath/sandbox/proxy/conf.stream.d:/etc/nginx/conf.stream.d \\
+docker run -it --name sandbox-proxy --network=cda \\
+-v /$PWD/assets/nginx.conf:/etc/nginx/nginx.conf \\
+-v /$PWD/sandbox/proxy/conf.d:/etc/nginx/conf.d \\
+-v /$PWD/sandbox/proxy/conf.stream.d:/etc/nginx/conf.stream.d \\
 EOF
 
 for port in ${httpPorts[@]}; do
@@ -225,5 +224,5 @@ EOF
 done
 
 cat << EOF >> sandbox/proxy/proxy-deploy.sh
--d ${registry}/sandbox-proxy:$version
+-d hortonworks/sandbox-proxy:$version
 EOF

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 docker rm -f sandbox-proxy 2>/dev/null
-docker run --name sandbox-proxy --network=cda \
--v /c/Users/swati/Downloads/HDP3.0.1/assets/assets/nginx.conf:/etc/nginx/nginx.conf \
--v /c/Users/swati/Downloads/HDP3.0.1/assets/sandbox/proxy/conf.d:/etc/nginx/conf.d \
--v /c/Users/swati/Downloads/HDP3.0.1/assets/sandbox/proxy/conf.stream.d:/etc/nginx/conf.stream.d \
+docker run -it --name sandbox-proxy --network=cda \
+-v /$PWD/assets/nginx.conf:/etc/nginx/nginx.conf \
+-v /$PWD/sandbox/proxy/conf.d:/etc/nginx/conf.d \
+-v /$PWD/sandbox/proxy/conf.stream.d:/etc/nginx/conf.stream.d \
 -p 1080:1080 \
 -p 4200:4200 \
 -p 7777:7777 \
@@ -49,7 +49,6 @@ docker run --name sandbox-proxy --network=cda \
 -p 15500:15500 \
 -p 1100:1100 \
 -p 1111:1111 \
--p 1234:1234 \
 -p 1988:1988 \
 -p 2100:2100 \
 -p 2181:2181 \
