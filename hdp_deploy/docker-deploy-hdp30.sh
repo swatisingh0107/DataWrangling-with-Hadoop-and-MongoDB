@@ -1,4 +1,8 @@
 #!/usr/bin/env sh
+#Setup VM configuration
+#docker-machine rm default
+docker-machine create -d virtualbox --virtualbox-disk-size "100000" --virtualbox-memory "10240" --virtualbox-cpu-count "4" default
+
 #This script downloads HDP sandbox along with their proxy docker container
 set -x
 

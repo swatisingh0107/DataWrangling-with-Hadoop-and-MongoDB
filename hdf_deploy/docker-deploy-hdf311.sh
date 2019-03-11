@@ -1,5 +1,10 @@
 #!/usr/bin/env sh
 #This script downloads HDF sandbox along with their proxy docker container
+
+#To troubleshoot cgroup mount issue in docker 18.03
+docker-machine ssh default "sudo mkdir /sys/fs/cgroup/systemd"
+docker-machine ssh default "sudo mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd"
+
 set -x
 
 # CAN edit these values
