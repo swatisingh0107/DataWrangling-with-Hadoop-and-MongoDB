@@ -1,6 +1,14 @@
 # SparkMLApplication (Project in Progress)
 This tutorial will take you through the following steps to build a real time streaming application for analysis of Twitter Data. The brand to perform analysis for is Nike. Nike is one of the most famous corporations that can be found on the planet. In significant part, this is because of its outstanding marketing, which has made it a household name in countries situated all around the globe.
 
+**Environment:**
+Windows 10 Home  
+16 GB RAM  
+Docker ToolBox v 18.03.0-ce  
+Git Bash  
+HDP 2.6.5 Sandbox  
+HDF 3.1.1 Sandbox  
+
 **A quick twitter search for #Nike, #ChooseGo helps us shortlist some keywords that we can use for Twitter Search API.**
 Nike  
 Swoosh  
@@ -73,6 +81,26 @@ Now that both HDP and HDF sandbox have been deployed, you can see the containers
 
 The first is the NGINX proxy container followed by HDF and HDP containers.
 **NGINX Proxy** is  a reverse proxy server that resides behind a firewall and directs incoming requests to multiple backend servers. In our case, it is HDP and HDF containers.
+
+## Map Sandbox IP to hostname
+We will now map the ip address of the docker machine with that of the hostname. Remember, the Nginx reverse proxy server directs the request to the appropriate container. Here, based on the hostname, appropriate sandbox conatiner will be accessed.
+
+```
+#IP Address of the docker machine
+$ docker-machine ip
+XXX.XXX.XX.XXX
+```
+1. Run Notepad as administrator.   
+2. Open hosts file located in: c:\Windows\System32\drivers\etc\hosts  
+3. Add {IP-Address} localhost sandbox-hdp.hortonworks.com sandbox-hdf.hortonworks.com   
+4. Save the file  
+**IMPORTANT**: Replace {IP-Address} with Sandbox IP Address  
+
+**HDP and HDF Sandbox are now setup**
+HDP Sandbox:  http://sandbox-hdp.hortonworks.com:8080
+HDF Sandbox:  http://sandbox-hdf.hortonworks.com:8080
+
+[Login Credentials](https://hortonworks.com/tutorial/learning-the-ropes-of-the-hortonworks-sandbox/#login-credentials)
 
 # Create Twitter Application
 
