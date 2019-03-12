@@ -19,8 +19,8 @@ NikeSportsWear
 
 ## Steps in this tutorial:
 1. [Sandbox Installation](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis#sandbox-installation)
-2. [Create Twitter API Application]((https://github.com/swatisingh0107/NikeRealTimeDataAnalysis#create-twitter-application)
-3. Setup Development Environment
+2. [Create Twitter API Application](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis#create-twitter-application)
+3. [Setup Development Environment](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis#setup-development-environment)
 4. Create Nifi DataFlow for tweets ingestion into Kafka
 5. Build SparkSQL Application for data cleaning
 6. Build sentiment analysis model using gradient boosting
@@ -97,4 +97,5 @@ You can now access your authentication tokens
 
 We will use this to fetch and store Twitter data in kafka topic at a later stage.
 
+# Setup Development Envrionment
 
