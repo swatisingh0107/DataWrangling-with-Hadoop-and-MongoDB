@@ -100,6 +100,8 @@ XXX.XXX.XX.XXX
 HDP Sandbox:  http://sandbox-hdp.hortonworks.com:8080
 HDF Sandbox:  http://sandbox-hdf.hortonworks.com:8080
 
+
+
 [Login Credentials](https://hortonworks.com/tutorial/learning-the-ropes-of-the-hortonworks-sandbox/#login-credentials)
 
 # Create Twitter Application
@@ -126,4 +128,39 @@ You can now access your authentication tokens
 We will use this to fetch and store Twitter data in kafka topic at a later stage.
 
 # Setup Development Envrionment
+
+Verify Prerequisites before setting up development environmet:
+1. Map hostname with Sandbox IP
+2. Setup Ambari Admin password for HDP and HDF
+3. Acquire Twitter authorization tokens
+
+## Setup HDF Development Environemnt
+The first step will be to start 'Nifi' in Ambari as we will need it to develop data flow for acquiring twitter data.
+
+The Twitter API stores and returns tweets in GMT. It is important to syncronize the system clock with GMT to avoid running into authorization errors while connecting to the Twitter API Feed through GetTwitter processor. Another reason to syncronize the clocks is that since we will collect the tweets in batches at an interval of few seconds, we may loose some tweets that may have appeared since the last updated time.  
+```
+$ docker exec -it sandbox-hdf bin/bash
+[root@sandbox-hdf /]#  echo "Synchronizing CentOS7 System Clock with UTC for GetTwitter Processor"
+[root@sandbox-hdf /]# # Install Network Time Protocol
+[root@sandbox-hdf /]# yum install -y ntp
+[root@sandbox-hdf /]# service ntpd stop
+[root@sandbox-hdf /]# # Use the NTPDATE to synchronize CentOS7 sysclock within few ms of UTC
+[root@sandbox-hdf /]# ntpdate pool.ntp.org
+[root@sandbox-hdf /]# service ntpd start
+```
+
+The second part of the code cleans up the NiFi flow that is already prebuilt into HDF Sandbox by backing up the flow and removing it.
+```
+mv /var/lib/nifi/conf/flow.xml.gz /var/lib/nifi/conf/flow.xml.gz.bak
+```
+Restart Nifi from Ambari UI for the changes to take effect.
+If Kafka is off, make sure to turn it on from Ambari.
+
+We will need to create a Kafka topic on HDF for Spark to stream data into from HDP.
+```
+/usr/hdf/current/kafka-broker/bin/kafka-topics.sh --create --zookeeper sandbox-hdf.hortonworks.com:2181 --replication-factor 1 --partitions 10 --topic tweetsSentiment
+```
+
+
+## Setup HDP Development environment
 
