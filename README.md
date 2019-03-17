@@ -9,7 +9,7 @@ Git Bash
 HDP 2.6.5 Sandbox  
 HDF 3.1.1 Sandbox  
 
-**A quick twitter search for #Nike, #ChooseGo helps us shortlist some keywords that we can use for Twitter Search API.**
+**A quick twitter search for #Nike, #ChooseGo helps us shortlist some keywords that we can use for Twitter Search API.**  
 Nike  
 Swoosh  
 JustDoIt  
@@ -29,7 +29,7 @@ NikeSportsWear
 1. [Sandbox Installation](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis#sandbox-installation)
 2. [Create Twitter API Application](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis#create-twitter-application)
 3. [Setup Development Environment](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis#setup-development-environment)
-4. Create Nifi DataFlow for tweets ingestion into Kafka
+4. [Create Nifi DataFlow for tweets ingestion into Kafka](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis#nifi-dataflow)
 5. Build SparkSQL Application for data cleaning
 6. Build sentiment analysis model using gradient boosting
 7. Build spark streaming application to store sentiment score in kafka topic
@@ -96,9 +96,11 @@ XXX.XXX.XX.XXX
 4. Save the file  
 **IMPORTANT**: Replace {IP-Address} with Sandbox IP Address  
 
-**HDP and HDF Sandbox are now setup**
-HDP Sandbox:  http://sandbox-hdp.hortonworks.com:8080
-HDF Sandbox:  http://sandbox-hdf.hortonworks.com:8080
+**HDP and HDF Sandbox are now setup**  
+HDP Sandbox:  http://sandbox-hdp.hortonworks.com:8080  
+![alt text](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis/blob/master/Images/hdp-Ambari.JPG)
+HDF Sandbox:  http://sandbox-hdf.hortonworks.com:8080  
+![alt text](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis/blob/master/Images/HDF-Ambari.JPG)
 
 
 
@@ -153,14 +155,86 @@ The second part of the code cleans up the NiFi flow that is already prebuilt int
 ```
 mv /var/lib/nifi/conf/flow.xml.gz /var/lib/nifi/conf/flow.xml.gz.bak
 ```
-Restart Nifi from Ambari UI for the changes to take effect.
+Restart **Nifi** from Ambari UI for the changes to take effect.
 If Kafka is off, make sure to turn it on from Ambari.
 
-We will need to create a Kafka topic on HDF for Spark to stream data into from HDP.
+We will need to create a **Kafka** topic on HDF for Spark to stream data into from HDP.
 ```
 /usr/hdf/current/kafka-broker/bin/kafka-topics.sh --create --zookeeper sandbox-hdf.hortonworks.com:2181 --replication-factor 1 --partitions 10 --topic tweetsSentiment
+exit
 ```
 
 
 ## Setup HDP Development environment
+Ensure that kafka, Hive, HDFS, Spark and HBase are running in HDP Ambari. If not, restart all services for these components.
+```
+docker exec -it sandbox-hdp bin/bash
+```  
+
+**Setup Kafka Service**  
+Create a Kafka topic on HDP for NiFi to publish messages to the Kafka queue.  
+```
+/usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create --zookeeper sandbox-hdp.hortonworks.com:2181 --replication-factor 1 --partitions 10 --topic tweets
+```
+**Setup Hive Service**  
+Following commands will create, read and write to tables built on top of JSON data by installing maven, downloading Hive-JSON-Serde library and compiling that library.
+
+```
+echo "Setting Up Maven needed for Compiling and Installing Hive JSON-Serde Lib"
+wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo
+yum install -y apache-maven
+mvn -version
+
+echo "Setting up Hive JSON-Serde Libary"
+git clone https://github.com/rcongiu/Hive-JSON-Serde
+cd Hive-JSON-Serde
+# Compile JsonSerDe source to create JsonSerDe library jar file
+mvn -Phdp23 clean package
+# Give JsonSerDe library jar file to Hive and Hive2 library
+cp json-serde/target/json-serde-1.3.9-SNAPSHOT-jar-with-dependencies.jar /usr/hdp/3.0.0.0-1634/hive/lib
+cd ~/
+```
+Restart Hive for the changes to take effect.
+
+ **Setup HDFS Service**
+ We will now create tweets folder that will hold a zipped file. This data will be copied over to HDFS where it will be later loaded by Spark to refine the historical data for creating a machine learning model. 
+ ```
+ echo "Setting up HDFS for Tweet Data"
+HDFS_TWEET_STAGING="/sandbox/tutorial-files/770/tweets_staging"
+LFS_TWEETS_PACKAGED_PATH="/sandbox/tutorial-files/770/tweets"
+sudo -u hdfs mkdir -p $LFS_TWEETS_PACKAGED_PATH
+# Create tweets_staging hdfs directory ahead of time for hive
+sudo -u hdfs hdfs dfs -mkdir -p $HDFS_TWEET_STAGING
+# Change HDFS ownership of tweets_staging dir to maria_dev
+sudo -u hdfs hdfs dfs -chown -R maria_dev $HDFS_TWEET_STAGING
+# Change HDFS tweets_staging dir permissions to everyone
+sudo -u hdfs hdfs dfs -chmod -R 777 $HDFS_TWEET_STAGING
+# give anyone rwe permissions to /sandbox/tutorial-files/770
+sudo -u hdfs hdfs dfs -chmod -R 777 /sandbox/tutorial-files/770
+sudo -u hdfs wget https://github.com/hortonworks/data-tutorials/raw/master/tutorials/cda/building-a-sentiment-analysis-application/application/setup/data/tweets.zip -O $LFS_TWEETS_PACKAGED_PATH/tweets.zip
+sudo -u hdfs unzip $LFS_TWEETS_PACKAGED_PATH/tweets.zip -d $LFS_TWEETS_PACKAGED_PATH
+sudo -u hdfs rm -rf $LFS_TWEETS_PACKAGED_PATH/tweets.zip
+# Remove existing (if any) copy of data from HDFS. You could do this with Ambari file view.
+sudo -u hdfs hdfs dfs -rm -r -f $HDFS_TWEET_STAGING/* -skipTrash
+# Move downloaded JSON file from local storage to HDFS
+sudo -u hdfs hdfs dfs -put $LFS_TWEETS_PACKAGED_PATH/* $HDFS_TWEET_STAGING
+```
+**Setup Spark Service**
+For Spark Structured Streaming, we will need to leverage SBT package manager. The commands below install SBT. 
+
+```
+curl https://bintray.com/sbt/rpm/rpm | sudo tee /etc/yum.repos.d/bintray-sbt-rpm.repo
+yum install -y sbt
+```
+**Setup HBase Service**
+For HBase since we will be storing streams of data into it from NiFi, we will need to create a table ahead of time, so we wont’ have to switch between both applications
+
+```
+#!/bin/bash
+# -e: causes echo to process escape sequences, build confirmation into it
+# -n: tells hbase shell this is a non-interactive session
+echo -e "create 'tweets_sentiment','social_media_sentiment'" | hbase shell -n
+```
+# NIFI Dataflow
+
 
