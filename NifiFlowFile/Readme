@@ -1,0 +1,3 @@
+**DataFlow1:** This NiFi dataflow will ingest data from Twitter using the twitter credentials, pull key attributes that will help with our analysis and store the data in Kafka topic called tweets
+
+**DataFlow2:** The second NiFi flow in another process group will consume data from Kafka topic  tweetsSentiment”, which has a trained sentiment model built with an external service SparkML and send the data to be stored into HBase. 
