@@ -1,4 +1,4 @@
-# SparkMLApplication (Project in Progress)
+# Data Wrangling with Nifi, Spark and MongoDB
 This tutorial will take you through the following steps to build a real time streaming application for analysis of Twitter Data. The brand to perform analysis for is Nike. Nike is one of the most famous corporations that can be found on the planet. In significant part, this is because of its outstanding marketing, which has made it a household name in countries situated all around the globe.
 
 **Environment:**
@@ -33,7 +33,7 @@ NikeSportsWear
 5. Build SparkSQL Application for data cleaning
 6. Build sentiment analysis model using gradient boosting
 7. Build spark streaming application to store sentiment score in kafka topic
-8. Perform Analysis in Hive
+8. Perform Analysis in MongoDB
 
 # Sandbox Installation
 ## Setup HDP Sandbox
@@ -166,7 +166,7 @@ exit
 
 
 ## Setup HDP Development environment
-Ensure that kafka, Hive, HDFS, Spark and HBase are running in HDP Ambari. If not, restart all services for these components.
+Ensure that kafka, HDFS and Spark  are running in HDP Ambari. If not, restart all services for these components.
 ```
 docker exec -it sandbox-hdp bin/bash
 ```  
@@ -176,25 +176,7 @@ Create a Kafka topic on HDP for NiFi to publish messages to the Kafka queue.
 ```
 /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create --zookeeper sandbox-hdp.hortonworks.com:2181 --replication-factor 1 --partitions 10 --topic tweets
 ```
-**Setup Hive Service**  
-Following commands will create, read and write to tables built on top of JSON data by installing maven, downloading Hive-JSON-Serde library and compiling that library.
 
-```
-echo "Setting Up Maven needed for Compiling and Installing Hive JSON-Serde Lib"
-wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo
-yum install -y apache-maven
-mvn -version
-
-echo "Setting up Hive JSON-Serde Libary"
-git clone https://github.com/rcongiu/Hive-JSON-Serde
-cd Hive-JSON-Serde
-# Compile JsonSerDe source to create JsonSerDe library jar file
-mvn -Phdp23 clean package
-# Give JsonSerDe library jar file to Hive and Hive2 library
-cp json-serde/target/json-serde-1.3.9-SNAPSHOT-jar-with-dependencies.jar /usr/hdp/3.0.0.0-1634/hive/lib
-cd ~/
-```
-Restart Hive for the changes to take effect.
 
  **Setup HDFS Service**
  We will now create tweets folder that will hold a zipped file. This data will be copied over to HDFS where it will be later loaded by Spark to refine the historical data for creating a machine learning model. 
@@ -226,15 +208,35 @@ For Spark Structured Streaming, we will need to leverage SBT package manager. Th
 curl https://bintray.com/sbt/rpm/rpm | sudo tee /etc/yum.repos.d/bintray-sbt-rpm.repo
 yum install -y sbt
 ```
-**Setup HBase Service**
-For HBase since we will be storing streams of data into it from NiFi, we will need to create a table ahead of time, so we wont’ have to switch between both applications
 
-```
-#!/bin/bash
-# -e: causes echo to process escape sequences, build confirmation into it
-# -n: tells hbase shell this is a non-interactive session
-echo -e "create 'tweets_sentiment','social_media_sentiment'" | hbase shell -n
-```
 # NIFI Dataflow
 
+We will build two dataflows to perform two separate functions
+**DataFlow1:** This NiFi dataflow will ingest data from Twitter using the twitter credentials, pull key attributes that will help with our analysis and store the data in Kafka topic called tweets  
+![alt text](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis/blob/master/Images/DataFlow1.png)
 
+**DataFlow2:** The second NiFi flow in another process group will consume data from Kafka topic  ‘tweetsSentiment’, which has a trained sentiment model built with an external service SparkML and send the data to be stored into MongoDB.   
+
+It is recommended to import the NiFi flow from your local computer to the NiFi Interface.   
+
+1.	Open the Nifi Interface: http://sandbox-hdf.hortonworks.com:9090/nifi/  
+2.	Right Click to select ‘Upload Template’  
+3.	Click on the search icon and select the XML file  
+4.	Click on the Upload Button  
+
+## Deep Dive into DataFlow 1  
+DataFlow1 Processor Group consists of four processors.  
+The NiFi template is available for import.
+
+![alt text](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis/blob/master/Images/DataFlow2.png)
+
+1.	**GetTwitter:** In NiFi we have the in-built GetTwitter processor which pulls tweets through twitter streaming API. Double click on the processor to populate our twitter credentials and the keywords to filter tweets on
+![alt text](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis/blob/master/Images/GetTwitter.png)
+
+2.	**EvaluateJSONPath:** EvaluateJsonPath is used to extract Json fields as attribute or content. Setting the Destination to flowfile-attribute ensures that each JSON Path will be extracted to the named attribute value. The twitter JSON values are the name of the keys of Tweet JSON data. 
+![alt text](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis/blob/master/Images/EvaluateJSON.png)
+
+3.	**RouteonAttribute:**  One of the most powerful features of NiFi is the ability to route FlowFiles based on their Attributes. The primary mechanism for doing this is the RouteOnAttribute Processor. Any number of user-defined properties can be added by clicking the "+" button in the top-right corner of the Properties tab in the Processor's Configure dialog. The most common strategy is the "Route to Property name" strategy. With this strategy selected, the Processor will expose a Relationship for each property configured. If the FlowFile's Attributes satisfy the given expression, a copy of the FlowFile will be routed to the corresponding Relationship. For example, in our case, FlowFile will be routed if the tweet’s message/text is not empty. This ensure that we do not have redundant data. ![alt text](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis/blob/master/Images/RouteonAttribute.png)
+
+4. **PublishKafka:** Finally, we extract the metadata, key and value. Publish kafka key and value using PublishKafka processor. Note, that kafka topic name ‘tweets’ should be updated in PublishKafka processor. 
+![alt text](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis/blob/master/Images/PublishKafka.png)
