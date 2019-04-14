@@ -30,10 +30,9 @@ NikeSportsWear
 2. [Create Twitter API Application](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis#create-twitter-application)
 3. [Setup Development Environment](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis#setup-development-environment)
 4. [Create Nifi DataFlow for tweets ingestion into Kafka](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis#nifi-dataflow)
-5. Build SparkSQL Application for data cleaning
-6. Build sentiment analysis model using gradient boosting
-7. Build spark streaming application to store sentiment score in kafka topic
-8. Perform Analysis in MongoDB
+5. [Build SparkSQL Application for data cleaning](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis#building-sentiment-analysis-model)
+6. [Build spark streaming application to store sentiment score in kafka](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis#spark-streaming-application-to-deploy-model)
+7. [Perform Analysis in MongoDB](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis#data-analysis-in-mongoDB)
 
 # Sandbox Installation
 ## Setup HDP Sandbox
