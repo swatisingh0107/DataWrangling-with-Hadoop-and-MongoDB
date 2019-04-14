@@ -1,11 +1,7 @@
 #!/usr/bin/env sh
 #Setup VM configuration
-docker-machine rm default
-docker-machine create -d virtualbox --virtualbox-disk-size "100000" --virtualbox-memory "10240" --virtualbox-cpu-count "4" default
-
-##To troubleshoot cgroup mount issue in docker 18.03
-docker-machine ssh default "sudo mkdir /sys/fs/cgroup/systemd"
-docker-machine ssh default "sudo mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd"
+#docker-machine rm default
+#docker-machine create -d virtualbox --virtualbox-disk-size "100000" --virtualbox-memory "10240" --virtualbox-cpu-count "4" default
 
 #This script downloads HDP sandbox along with their proxy docker container
 set -x
