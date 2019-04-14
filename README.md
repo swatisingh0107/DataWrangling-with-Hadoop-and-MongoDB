@@ -463,4 +463,221 @@ model.save(sc, "hdfs:///sandbox/tutorial-files/770/tweets/RandomForestModel")
 ![alt text](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis/blob/master/Images/RandomForestModel.png)
 
 
+# Spark Streaming Application to Deploy Model
+![alt text](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis/blob/master/Images/SparkApplication.png)
+
+We configured our Spark streaming application as follows:
+```
+spark {
+
+  kafkaBrokers {
+    kafkaBrokerHDF: "sandbox-hdf.hortonworks.com:6667"
+    kafkaBrokerHDP: "sandbox-hdp.hortonworks.com:6667"
+  }
+
+  appName = "SentimentModel"
+  messageFrequency = 200 //milliseconds
+  modelLocation = "hdfs:///sandbox/tutorial-files/770/tweets/RandomForestModel"
+
+  kafkaTopics {
+    tweetsRaw: "tweets"
+    tweetsWithSentiment: "tweetsSentiment"
+  }
+}
+```
+Our Spark Streaming Application contains two classes. ‘Predictor’ class converts the tweet into a vector using Hashing transformation and predicts the sentiment. The Collect class collects the tweet, applies the predict object from Predictor class and appends the sentiment score to the outgoing tweet.
+### Predictor.scala
+```
+class Predictor(model: GradientBoostedTreesModel){// Function to predict the sentiment on vectorized tweet msg
+  def predict(tweet:String): Double ={
+    if(tweet == null || tweet.length == 0)
+      throw new RuntimeException("Tweet is null")
+    val features = vectorize(tweet)
+    return model.predict(features)
+  } //Function to vectorize raw tweet msg
+val hashingTF = new HashingTF(2000)
+  def vectorize(tweet:String):Vector={
+    hashingTF.transform(tweet.split(" ").toSeq)
+  }
+ }
+```
+### Collect.scala
+```
+val options = new CollectOptions(
+      config.getString("spark.kafkaBrokers.kafkaBrokerHDF"),
+      config.getString("spark.kafkaBrokers.kafkaBrokerHDP"),
+      config.getString("spark.kafkaTopics.tweetsRaw"),
+      config.getString("spark.kafkaTopics.tweetsWithSentiment"),
+      config.getString("spark.appName"),
+      config.getString("spark.modelLocation")
+    )
+ 
+    val spark = SparkSession
+      .builder
+      .appName("DeploySentimentModel")
+      .getOrCreate()
+    spark.sparkContext.setLogLevel("ERROR")// Create DataSet representing the stream of input lines from kafka
+ 
+    val rawTweets = spark
+      .readStream
+      .format("kafka")
+      .option("kafka.bootstrap.servers", options.kafkaBrokerHDP)
+      .option("subscribe", options.tweetsTopic)
+      .load()
+      .selectExpr("CAST(value AS STRING)")
+      .as[String]
+// Create DataSet representing the stream of input lines from kafka
+    val rawTweets = spark
+      .readStream
+      .format("kafka")
+      .option("kafka.bootstrap.servers", options.kafkaBrokerHDP)
+      .option("subscribe", options.tweetsTopic)
+      .load()
+      .selectExpr("CAST(value AS STRING)")
+      .as[String]
+ 
+    rawTweets.printSchema()
+    //Our Predictor class can't be serialized, so we're using mapPartition to create a new model instance for each partition.
+    val tweetsWithSentiment = rawTweets.mapPartitions((iter) => {
+      val pred = new Predictor(model
+      val parser = new JsonParser()
+      iter.map(
+        tweet =>
+          //For error handling, we're mapping to a Scala Try and filtering out records with errors.
+          Try {
+            val element = parser.parse(tweet).getAsJsonObject
+            val msg = element.get("text").getAsString
+            val sentiment = pred.predict(msg)
+            element.addProperty("sentiment", pred.predict(tweet))
+            val json = element.toString
+            println(json)
+            json
+          }
+      ).filter(_.isSuccess).map(_.get)
+    })
+ 
+    val query = tweetsWithSentiment.writeStream
+      .outputMode("append")
+      .format("console")
+      .start()
+ 
+    //Push back to Kafka
+    val kafkaProps = new Properties()
+    //props.put("metadata.broker.list",  options.kafkaBrokerList)
+    kafkaProps.put("bootstrap.servers", options.kafkaBrokerHDF)
+    kafkaProps.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer")
+    kafkaProps.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer")
+ 
+    tweetsWithSentiment
+      .writeStream
+      .foreach(
+        new ForeachWriter[(String)] {
+ 
+          //KafkaProducer can't be serialized, so we're creating it locally for each partition.
+          var producer:KafkaProducer[String, String] = null
+ 
+          override def process(value: (String)) = {
+            val message = new ProducerRecord[String, String](options.tweetsWithSentimentTopic, null,value)
+            println("sending windowed message: " + value)
+            producer.send(message)
+          }
+ 
+          override def close(errorOrNull: Throwable) = ()
+ 
+          override def open(partitionId: Long, version: Long) = {
+            producer = new KafkaProducer[String, String](kafkaProps)
+            true
+          }
+        }).start()
+ 
+    query.awaitTermination()
+```
+
+###  Copying Sentiment model to HDFS
+We copied the jar version of our spark streaming application into HDFS
+
+![alt text](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis/blob/master/Images/CopyJar.png)
+
+Now we will deploy the jar file on our local HDP and can see the output as Spark scores each tweet.
+```
+/usr/hdp/current/spark2-client/bin/spark-submit --class "main.scala.Collect" --master local[4] root/SentimentModel-assembly-0.1.jar
+```
+ Once the jar is deployed, the application starts listening for tweets
+ ![alt text](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis/blob/master/Images/KafkaListener.png)
+ 
+ We can see below that sentiment score is being assigned
+  ![alt text](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis/blob/master/Images/SentimentScore.png)
+  
+  # Data Analysis in MongoDB
+  When we load data into MongoDB, we see that all attributes have default datatype as String. This is because Nifi Processor AttributestoJSON converts all attributes to String. We can use the aggregation framework in MongoDB to further process data into our desired format. Below is one of the first records that was streamed through our flow and loaded into MongoDB.
+  
+![alt text](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis/blob/master/Images/MongoDBCollection.png)
+    
+ We will now transform this document and all the other documents into desired output. We will use the aggregation framework and create a data pipeline as follows
+
+![alt text](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis/blob/master/Images/AggregationPipeline.png)
+```
+$project:/**
+* specifications - The fields to
+ *   include or exclude.
+ */
+{
+  tweet_id:'$tweet_id',
+  created_at:{$dateFromString:{dateString:'$time'}},
+  user:'$handle',
+  followers:{$toInt:'$followers'},
+  msg:'$msg',
+ hashtags:{$concat:['$hashtags',',','$hashtag1',',','$hashtag2',',','$hashtag3',',','$hashtag4']},
+  sentiment:{$toInt:{$toDecimal:'$sentiment'}},
+  retweeted_from:'$retweeted_from',
+  Promoter_followers:{
+   $cond: { if: {$gt:[{$strLenCP:'$Promoter_followers'},0]}, then:{$toInt:'$Promoter_followers'}, else: 0 } 
+  },
+  retweet_count:{
+   $cond: { if: {$gt:[{$strLenCP:'$retweet_count'},0]}, then: {$toInt:'$retweet_count'}, else: 0 } 
+    
+  }
+}
+ 
+$out:’Processed_social_media_sentiment’
+```
+ We will store the result in a separate collection.
+ This is how the processed document looks like
+ ![alt text](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis/blob/master/Images/ProcessedTweet.png)
+
+Upon quickly going through some of the documents, I realized that the retweeted_from , retweet_count and promoter_followers fields were empty. This is because we filtered tweets with empty messages in the Nifi flow. However, this is an important attribute as we can gauge the reach of a tweets based on its retweet count. So let’s modify the nifi flow to include retweets as well.
+We modified the condition from Dataflow1 in RouteonAttribute for ${twitter.handle:isEmpty():not()}
+Let’s rerun the flow to analyze new tweet documents. We can see that we are getting are now recording retweets as well. After running for few minutes we have over 3.3K records or documents. 
+
+ ![alt text](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis/blob/master/Images/Retweets.png)
+ 
+# Some Insights:
+**Most popular retweets:**
+{retweet_count: {$gte:100000}}
+ ![alt text](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis/blob/master/Images/Populartweets.png)
+
+Both their most popular ads were received negatively. First is the Ad with Kaepernick. Although Nike made [huge profits](https://www.vox.com/2018/9/24/17895704/nike-colin-kaepernick-boycott-6-billion) after releasing this ad, it is causing a huge debate around whether kneeling during the national anthem was insulting for the American soldiers or protest again police brutality. However, this is what Nike is famous for. They win the odds by striking a debate about important topics.
+Their other ad focusing on women athletes also has been received well with the audience and has been retweeted 195K times since its release in Feb 2019.
+It is also important to understand that these ads with negative sentiment have been hugely popular. We can safely say that ads that bring out bias have been beneficial for Nike in striking some kind of chord with the audience.
+Since our sentiment is only 1 and 0, it also appears that tweets with neutral sentiment are also getting recorded as 0. So lets run some analysis on tweets with sentiment score 1.
+
+**Most popular positive tweet**
+ ![alt text](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis/blob/master/Images/PositiveTweet.png)
+
+The Nike Ad by Kyrie Irving was retweeted 17K times. It is still popular since its release in November 2018.
+
+**Popular Handles**
+ ![alt text](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis/blob/master/Images/PopularHandle.png)
+
+Also we can see the most popular influencer handles based on the analysis of only 3.3k documents on twitter are Kaepernick, Nike, KyrieIrving, Cristiano, ESPNNBA, nikestore, nikebasketball and footlocker. 
+ ![alt text](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis/blob/master/Images/ChangeinFollowers.png)
+ Here we can see that ESPNNBA has had a decrease of followers in a few minutes from 6028988 to 6028981. We also see a fluctuation in the number of followers over time.The number is small due to a small time window of the data captured.
+Most gathering the count of most popular hashtags, I exported the hashtags column from Processed_social_media_sentiment and loaded into python for analysis
+
+**Popular Hashtags**
+ ![alt text](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis/blob/master/Images/PopularHashtags.png)
+ ![alt text](https://github.com/swatisingh0107/NikeRealTimeDataAnalysis/blob/master/Images/PopularHashtags2.png)
+
+MFFL is a news handle for Dallas Maverick. Nike is the apparel and shoes partner of this popular basketball team.
+
 
